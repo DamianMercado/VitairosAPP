@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MARCADOR DE POSICIÓN del isotipo VITAIROS (mineral geométrico + trazos de circuito + punto cobrizo).
+  Reemplazar por el recurso oficial autorizado (PNG/SVG) entregado por VITAIROS:
+  mismo nombre de archivo (vitairos_isotipo) para que la app lo use sin cambios de código.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Contorno mineral -->
+    <path
+        android:pathData="M60,10 L100,35 L100,85 L60,110 L20,85 L20,35 Z"
+        android:strokeColor="#FBF7F1"
+        android:strokeWidth="4"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Facetas -->
+    <path
+        android:pathData="M20,35 L60,55 L100,35 M60,55 L60,110"
+        android:strokeColor="#E8EFE9"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Trazos de circuito -->
+    <path
+        android:pathData="M38,62 L38,80 L48,88 M82,62 L82,80 L72,88 M60,28 L60,40"
+        android:strokeColor="#D9B46C"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <path
+        android:fillColor="#D9B46C"
+        android:pathData="M38,62 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 M82,62 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 M60,28 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
+    <!-- Punto cobrizo -->
+    <path
+        android:fillColor="#DD7A52"
+        android:pathData="M60,55 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+</vector>
