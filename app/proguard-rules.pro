@@ -1,1 +1,2 @@
-# Sin reglas adicionales para el prototipo básico.
+# Modelos serializados con Gson
+-keep class cl.vitairos.captura.data.remote.** { *; }

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VITAIROS"
+rootProject.name = "VitairosAPP"
 include(":app")
