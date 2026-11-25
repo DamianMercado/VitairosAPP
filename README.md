@@ -1,72 +1,121 @@
-# VitairosAPP — Prototipo VITAIROS (DSY1105)
+# VitairosAPP — VITAIROS Captura, MVP móvil (DSY1105)
 
 **Integrantes:** Damian Mercado · Isaac Roman · Equipo 4
 
-Versión **mínima funcional** de la app de captura de reportes operacionales para VITAIROS Industrial AI.
-Android nativo con Kotlin + Jetpack Compose (Android 8.0 / API 26 o superior). Usa **usuarios ficticios** y una
-**API simulada**; no se conecta a ningún servidor real.
+Prototipo funcional **Android nativo (Kotlin + Jetpack Compose)** para la captura de reportes operacionales de **VITAIROS Industrial AI**, construido según las respuestas del *Cuestionario de levantamiento de requerimientos* y la *Guía visual de referencia* entregadas por VITAIROS.
 
-## Cómo ejecutarlo
-1. Clona este repositorio (o descomprime el .zip) en una carpeta fuera de OneDrive, por ejemplo `C:\Proyectos\VitairosAPP`.
-2. En Android Studio ve a *File › Open* y elige la carpeta que contiene `settings.gradle.kts`.
-3. Espera la sincronización de Gradle y ejecuta ▶ *Run 'app'* con el celular conectado.
-4. Ingresa con `operador1` o `operador2`; la contraseña es `demo123`.
+> MVP académico: usa **usuarios ficticios**, **documentos sintéticos** y una **API simulada (mock)**. No se conecta a infraestructura, credenciales ni datos productivos de VITAIROS.
 
-Esta versión tiene otro identificador (`cl.vitairos.app`), así que puede instalarse junto a la versión completa.
+---
 
-## Qué incluye
-| Función | Detalle |
-|---|---|
-| Login simulado | Usuarios ficticios validados en el teléfono (solo se guarda el hash de la contraseña). |
-| Lista de reportes | Tipo, proceso, folio, fecha, miniatura de la foto y estado con texto + ícono. |
-| Nuevo reporte (1 pantalla) | Tipo y proceso desde lista fija, observaciones y **foto con cámara o galería**. |
-| Verificar foto | Pantalla completa con **Rotar / Repetir / Se ve bien**; botones adaptativos y dentro del área segura en cualquier celular. Solo se guarda con la foto verificada. |
-| Base de datos local | **SQLite con Room**: tabla `reportes` en `vitairos.db`. Funciona sin Internet. |
-| Estados | Borrador · En cola · Sincronizado · Error. |
-| Envío simulado | «Guardar y enviar», «Enviar», «Enviar pendientes» y «Reintentar». |
-| Validación visual | Campo inválido con **borde rojo + ícono de error + mensaje** (login, tipo, proceso, observaciones y foto). |
-| Animaciones | Transición al cambiar de pantalla (deslizar al avanzar/volver, fundido en el login) y aviso «Sin conexión» animado. |
-| Modo demostración (⚙) | *Simular sin conexión* → queda **En cola**. *Simular falla del servidor* → queda en **Error**. |
+## 1. Cómo abrir y ejecutar
 
-**Fuera de esta versión** (están en la versión completa `Vitairos`): perfil supervisor, PDF, varios adjuntos,
-reintentos automáticos, sincronización en segundo plano, historial con trazabilidad y versiones corregidas.
+1. Abrir **Android Studio** (Ladybug 2024.2 o superior) → *File › Open* → seleccionar la carpeta `VitairosAPP` (clonada desde GitHub, fuera de OneDrive).
+2. Esperar la sincronización de Gradle (descarga dependencias la primera vez; requiere Internet).
+3. *(Opcional, recomendado)* Copiar las tipografías de la guía visual:
+   - Windows: `powershell -ExecutionPolicy Bypass -File scripts\descargar_fuentes.ps1`
+   - macOS/Linux: `bash scripts/descargar_fuentes.sh`
+   Sin este paso la app funciona igual, usando la tipografía del sistema.
+4. Ejecutar en un emulador o teléfono con **Android 8.0 (API 26) o superior** (▶ *Run 'app'*).
+5. APK de entrega: *Build › Build App Bundle(s)/APK(s) › Build APK(s)* → `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Dónde se guarda la base de datos
-```
-/data/data/cl.vitairos.app/databases/vitairos.db      ← SQLite (tabla «reportes»)
-/data/data/cl.vitairos.app/files/fotos/                ← fotos comprimidas (JPEG)
-/data/data/cl.vitairos.app/shared_prefs/vitairos_prefs.xml  ← sesión y modo demostración
-```
-Para verla con el celular conectado: Android Studio › *View › Tool Windows › App Inspection* ›
-**Database Inspector**. Para copiarla al PC: *View › Tool Windows › Device Explorer* →
-`data/data/cl.vitairos.app/databases/` → clic derecho en `vitairos.db`, `vitairos.db-wal` y `vitairos.db-shm`
-→ *Save As* (copia los tres juntos) y ábrela con **DB Browser for SQLite**.
+Pruebas unitarias: `./gradlew testDebugUnitTest` (o clic derecho en `app/src/test` › *Run tests*).
 
-## Estructura (MVVM)
-```
-app/src/main/java/cl/vitairos/app/
-├── VitairosApp.kt · MainActivity.kt
-├── data/   Reglas.kt (catálogo, usuarios, validación) · BaseDeDatos.kt (Room)
-│           Contratos.kt (interfaces ServicioEnvio y AlmacenFotos) · Repositorio.kt
-│           Servicios.kt (preferencias, fotos, API simulada)
-└── ui/     AppRoot · CargaScreen · LoginScreen · InicioScreen · NuevoReporteScreen
-            VerificarFoto · DetalleScreen · Componentes · MainViewModel · theme/
-```
+### Usuarios de demostración (contraseña `demo123`)
 
-## Pruebas unitarias
-Están en `app/src/test/java/cl/vitairos/app/data/` y se ejecutan **sin celular ni Internet**:
-
-| Archivo | Qué prueba | Pruebas |
+| Usuario | Nombre ficticio | Perfil |
 |---|---|---|
-| `CatalogoTest.kt` | Login simulado, hash de la contraseña, usuarios, listas fijas, formato del folio y textos de estado | 10 |
-| `ValidacionTest.kt` | Reglas del formulario «Nuevo reporte»: campos obligatorios, foto verificada, máximo de 300 caracteres y mensajes | 8 |
-| `RepositorioTest.kt` | Guardar, enviar, cola sin conexión, error y reintento, eliminar y filtros por usuario | 14 |
-| `Fakes.kt` | Base de datos, servidor y fotos **falsos** (en memoria) que usan las pruebas del Repositorio | — |
+| `operador1` | Camila Rojas | Operador |
+| `operador2` | Diego Fuentes | Operador |
+| `supervisor` | Valentina Soto | Supervisor (vista acotada) |
 
-El Repositorio recibe interfaces (`ReporteDao`, `ServicioEnvio`, `AlmacenFotos`) en vez de clases de Android;
-por eso en las pruebas se le entregan versiones falsas y se controla qué responde el servidor.
+### Logo oficial
 
-**Cómo ejecutarlas**
-- Android Studio: clic derecho en la carpeta `app/src/test` › **Run 'Tests in…'**.
-- Terminal: `./gradlew testDebugUnitTest` (en Windows: `gradlew.bat testDebugUnitTest`).
-  El informe queda en `app/build/reports/tests/testDebugUnitTest/index.html`.
+`app/src/main/res/drawable/vitairos_isotipo.xml` es un **marcador de posición** inspirado en la descripción de la guía (mineral geométrico, trazos de circuito, punto cobrizo). Reemplázalo por el recurso autorizado entregado por VITAIROS con el mismo nombre (`vitairos_isotipo.png` o `.xml`) y elimina el placeholder; no requiere cambios de código.
+
+---
+
+## 2. Qué implementa (trazabilidad con el cuestionario)
+
+| Requerimiento VITAIROS | Implementación |
+|---|---|
+| Kotlin nativo, arquitectura por capas, API 26+ | Compose + ViewModel (UI) → Repositorio / SyncManager (lógica) → Room, DataStore, archivos, API (datos). `minSdk 26`, `targetSdk 35`. |
+| Teléfono vertical, gama media | Orientación vertical, tamaños táctiles ≥ 48 dp, layouts adaptables. |
+| Login simulado con usuarios ficticios | Validación local por hash SHA-256; la sesión guarda solo el ID de usuario (nunca la contraseña). |
+| Perfiles Operador y Supervisor | Operador: flujo completo. Supervisor: pestaña *Revisión* para consultar y marcar «Requiere corrección». |
+| Flujo: usuario → tipo/proceso → metadata → captura → revisión → guardar → cola → sincronizar → estado → historial | Asistente de 3 pasos (Contexto · Evidencia · Revisión) + cola + historial + detalle con bitácora. |
+| Cámara, galería y PDF; máx. 5 adjuntos; JPG/PNG/PDF; ≤10 MB | Cámara del sistema (`TakePicture`), selector de fotos (`PickVisualMedia`), selector PDF (`OpenDocument`). Validación de formato, tamaño, vacío y cantidad **bloquea** continuar. |
+| Compresión razonable de imágenes | Lado mayor ≤ 2048 px, JPEG 85 %, respeta orientación EXIF. Muestra tamaño original → optimizado. |
+| Revisión de calidad básica | Vista previa a pantalla completa (imágenes y PDF página a página) + confirmación obligatoria. Rotar 90° y repetir/reemplazar. Heurística opcional de oscuridad/desenfoque que solo **advierte**. |
+| Metadata mínima, campos automáticos vs. manuales | Automáticos: UUID, folio, fecha/hora, usuario, rol, ID técnico de instalación, estado y timestamps. Manuales: tipo, proceso (lista fija), área/faena, turno, campo condicional por tipo, observaciones, adjuntos. |
+| Campos condicionales simples | *Orden de mantención* → código de equipo; *Reporte de incidente* → severidad; *Parte de producción* no exige área. |
+| Estados Borrador, En cola, Enviando, Sincronizado, Error (+ Requiere corrección) | Siempre con **texto + ícono**, nunca solo color. |
+| Editar/eliminar antes de sincronizar; no después | Editar: Borrador, En cola, Error. Eliminar (con confirmación): Borrador y En cola. Sincronizado: inmutable; la corrección crea **nueva versión** vinculada. |
+| Offline-first; guardado automático | Todo se persiste en Room al avanzar de paso, al adjuntar y al salir del formulario. |
+| Sincronización automática + manual | Al recuperar conectividad y vía WorkManager (aunque la app esté cerrada) + botones *Sincronizar ahora* / *Reintentar*. |
+| 3 reintentos (5 s, 15 s, 30 s) y luego reintento manual | `RetryPolicy`; cuenta regresiva visible en la cola; luego estado **Error** con *Reintentar*. |
+| Persistencia tras cerrar/reiniciar | Al iniciar, los envíos interrumpidos (`Enviando`) vuelven a `En cola` y se reanudan. |
+| Duplicados | ID único por reporte (la API mock es idempotente) + SHA-256 de cada archivo: bloquea el mismo archivo dos veces en un reporte y advierte si ya existe en otro. |
+| API mock: envío, respuesta, errores, estados | Retrofit + interceptor OkHttp: multipart (metadata JSON + archivos), 201/500/503, sin conexión, comprobante, idempotencia. Modo configurable en *Ajustes*. |
+| IA fuera del dispositivo; resultados simulados | «Procesamiento VITAIROS Industrial AI» con badge **SIMULACIÓN**: En revisión → Procesado con campos de ejemplo. |
+| Seguridad | Almacenamiento privado, `allowBackup=false`, sin credenciales en texto plano, copia local de los adjuntos conservada tras sincronizar (almacenamiento privado), FileProvider solo para la cache de cámara, sin logs de datos sensibles. |
+| Validación visual y animaciones | Campos inválidos con borde rojo, ícono y mensaje; pantalla de carga; transiciones al cambiar de pantalla y aviso de conexión animado. |
+| Alertas in-app (sin push) | Snackbars: enviado correctamente, sin conexión, error, reintento programado, conexión recuperada. |
+| Pantallas mínimas | Login · Inicio/Dashboard · Nuevo reporte · Captura/Adjuntos y vista previa · Revisión/confirmación · Cola · Historial · Detalle/estado · Ajustes/perfil · (Supervisor: Revisión). |
+
+### Qué es real y qué es simulado
+
+| Funciona realmente | Simulado (mock) |
+|---|---|
+| Navegación, formularios y validaciones · persistencia Room · cola y estados · cámara/galería/PDF · compresión · historial y trazabilidad · recuperación tras cierre · detección de conectividad real · WorkManager | API REST de VITAIROS · usuarios/autenticación · estado posterior *En revisión/Procesado* · campos extraídos · vista Supervisor (mismo dispositivo) |
+
+---
+
+## 3. Guía rápida de demostración (≈ 5 min)
+
+1. Ingresar como **operador1** → *Nuevo reporte*.
+2. Elegir *Orden de mantención* → proceso → área → código de equipo → *Siguiente*.
+3. *Tomar foto* de un documento sintético → abrir la vista previa → *Se ve bien* → *Revisar*.
+4. Marcar la confirmación → **Guardar y enviar** → el detalle muestra *Enviando* → *Sincronizado* con comprobante.
+5. *Ajustes* → activar **Simular sin conexión** → crear otro reporte → queda **En cola** (banner offline).
+6. *Ajustes* → **Generar 10 reportes sintéticos** → la pestaña *Cola* muestra 11 pendientes.
+7. Cerrar la app desde recientes, reabrirla: los pendientes siguen ahí.
+8. Desactivar el modo offline → «Conexión recuperada» → la cola se vacía automáticamente.
+9. *Ajustes* → API mock **Siempre falla** → enviar un reporte: verás los reintentos 1/3, 2/3, 3/3 con cuenta regresiva y luego **Error** → volver a *Normal* → **Reintentar**.
+10. Cerrar sesión → ingresar como **supervisor** → *Revisión* → abrir un reporte → **Marcar requiere corrección**.
+11. Volver como **operador1** → el reporte aparece *Requiere corrección* → **Crear nueva versión corregida** (queda vinculada al original).
+
+Más detalle en [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) y [`docs/PLAN_DE_PRUEBAS.md`](docs/PLAN_DE_PRUEBAS.md). Arquitectura y modelo de datos en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
+
+---
+
+## 4. Estructura del código
+
+```
+app/src/main/java/cl/vitairos/captura/
+├── VitairosApp.kt · MainActivity.kt · AppContainer.kt   (arranque y DI manual)
+├── domain/Rules.kt                  reglas puras: reintentos, validaciones, adjuntos
+├── data/
+│   ├── model/                       estados, catálogo cerrado, usuarios ficticios
+│   ├── local/                       Room: entidades, DAOs, base de datos
+│   ├── prefs/SettingsStore.kt       DataStore: sesión, ID instalación, modo demo
+│   ├── files/                       adjuntos privados, compresión, PDF, sintéticos
+│   ├── remote/                      contrato Retrofit + API mock (interceptor)
+│   └── repo/ReportRepository.kt     única puerta a los datos + bitácora
+├── sync/                            SyncManager, conectividad, WorkManager, alertas
+└── ui/                              tema VITAIROS, componentes y pantallas
+```
+
+## 5. Decisiones técnicas (resumen)
+
+- **Room/SQLite** para reportes, adjuntos y bitácora: relaciones, consultas por estado, actualizaciones condicionales atómicas (evitan carreras entre edición y envío) y `Flow` reactivo para la UI. **DataStore** solo para preferencias simples.
+- **Retrofit + interceptor mock**: el código de red es el mismo que usaría una API real (multipart con metadata + archivos); basta quitar el interceptor y cambiar `API_BASE_URL`.
+- **WorkManager + SyncManager**: el SyncManager aplica la política 5/15/30 s mientras la app está abierta; WorkManager garantiza que la cola se procese al haber red aunque la app esté cerrada.
+- **Sin dependencias pagadas** ni servicios externos: todo es open source y funciona sin backend.
+
+## 6. Limitaciones conocidas del MVP
+
+- El catálogo de tipos/procesos es de demostración hasta que VITAIROS entregue el oficial (`data/model/Catalog.kt`).
+- El Supervisor ve los reportes del mismo dispositivo (no hay backend compartido).
+- No se cifra la base de datos local (mejora sugerida: SQLCipher / EncryptedFile).
+- Sin recorte de imagen ni detección de bordes (fuera del alcance obligatorio).
