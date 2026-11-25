@@ -30,6 +30,10 @@ class MockApiInterceptor(
     private val networkAvailable: () -> Boolean,
     private val server: MockServerState,
     private val gson: Gson,
+    /** Latencia simulada (ms). En las pruebas unitarias se usa 0. */
+    private val latencyMs: () -> Long = { Random.nextLong(700, 1600) },
+    /** Fuente de azar del modo intermitente (en las pruebas se usa una semilla fija). */
+    private val random: Random = Random.Default,
 ) : Interceptor {
 
     private val json = "application/json; charset=utf-8".toMediaType()
@@ -37,7 +41,7 @@ class MockApiInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         // Latencia de red simulada
-        Thread.sleep(Random.nextLong(700, 1600))
+        latencyMs().takeIf { it > 0 }?.let { Thread.sleep(it) }
 
         val s = settings()
         if (!s.loaded || !networkAvailable() || s.simulateOffline) {
@@ -57,7 +61,7 @@ class MockApiInterceptor(
         when (s.mockApiMode) {
             MockApiMode.SIEMPRE_FALLA ->
                 return respond(request, 500, ErrorResponse("ERROR", "Error interno del servidor (simulado)"))
-            MockApiMode.INTERMITENTE -> if (Random.nextBoolean()) {
+            MockApiMode.INTERMITENTE -> if (random.nextBoolean()) {
                 return respond(request, 503, ErrorResponse("ERROR", "Servicio no disponible temporalmente (simulado)"))
             }
             MockApiMode.NORMAL -> Unit

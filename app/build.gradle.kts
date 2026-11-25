@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -46,6 +47,39 @@ android {
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     }
+    testOptions {
+        // Robolectric necesita los recursos y el manifest para crear la app en las pruebas unitarias.
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all { it.maxHeapSize = "2g" }
+    }
+}
+
+// Cobertura de pruebas unitarias (Kover). Se mide la LÓGICA de la app: reglas, datos, sincronización y
+// ViewModels. Las pantallas Compose, el tema y el código generado quedan fuera de la medición.
+kover {
+    reports {
+        filters {
+            excludes {
+                annotatedBy("androidx.compose.runtime.Composable", "androidx.compose.ui.tooling.preview.Preview")
+                // Interfaz Compose (pantallas, componentes visuales, navegación y tema)
+                packages(
+                    "cl.vitairos.captura.ui.theme",
+                    "cl.vitairos.captura.ui.components",
+                    "cl.vitairos.captura.ui.navigation",
+                )
+                classes(
+                    "*ScreenKt", "*ScreenKt\$*", "*ComposableSingletons*", "cl.vitairos.captura.MainActivity*",
+                    // Código generado (BuildConfig, recursos R y DAOs de Room)
+                    "*.BuildConfig", "*.R", "*.R\$*", "*_Impl", "*_Impl\$*",
+                )
+            }
+        }
+        verify {
+            rule("Cobertura mínima de la lógica") {
+                minBound(80)
+            }
+        }
+    }
 }
 
 dependencies {
@@ -84,4 +118,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.androidx.work.testing)
 }

@@ -20,6 +20,7 @@ Prototipo funcional **Android nativo (Kotlin + Jetpack Compose)** para la captur
 5. APK de entrega: *Build › Build App Bundle(s)/APK(s) › Build APK(s)* → `app/build/outputs/apk/debug/app-debug.apk`.
 
 Pruebas unitarias: `./gradlew testDebugUnitTest` (o clic derecho en `app/src/test` › *Run tests*).
+Cobertura: configuración **Cobertura** en Android Studio (o `./gradlew koverHtmlReportDebug koverVerifyDebug`) → informe en `app/build/reports/kover/htmlDebug/index.html`.
 
 ### Usuarios de demostración (contraseña `demo123`)
 
@@ -113,7 +114,23 @@ app/src/main/java/cl/vitairos/captura/
 - **WorkManager + SyncManager**: el SyncManager aplica la política 5/15/30 s mientras la app está abierta; WorkManager garantiza que la cola se procese al haber red aunque la app esté cerrada.
 - **Sin dependencias pagadas** ni servicios externos: todo es open source y funciona sin backend.
 
-## 6. Limitaciones conocidas del MVP
+## 6. Pruebas unitarias y cobertura
+
+**128 pruebas** (JUnit 4 + Robolectric + Room en memoria + WorkManager de prueba) que cubren el **98 % de las líneas de la lógica** de la app, medido con **Kover**. La regla `koverVerifyDebug` exige un mínimo de **80 %**.
+
+| Archivo de prueba | Qué verifica |
+|---|---|
+| `RulesTest`, `ReglasDetalleTest` | Reintentos 5/15/30 s, validaciones de formulario y adjuntos, catálogo, login con hash, estados, antirrebote |
+| `ReportRepositoryTest` | Borradores, edición condicionada al estado, cola, bitácora, versiones, corrección del supervisor, datos sintéticos |
+| `MockApiInterceptorTest` | API simulada: 201/200 sin duplicar, 500/503, 400/404/422, sin conexión y procesamiento simulado |
+| `AttachmentStorageTest`, `AttachmentRulesStorageTest` | Importación JPG/PNG/PDF, compresión ≤ 2048 px, hash SHA-256, calidad (oscura/desenfoque), rotación, rechazos |
+| `SyncManagerTest` | Envío exitoso, backoff, error tras 3 reintentos, sin conexión, cancelación (nunca queda en «Enviando»), procesamiento |
+| `AppContainerTest` | Sesión, conectividad efectiva, envío de punta a punta con la API mock y respaldo con WorkManager |
+| `ViewModelsTest`, `DetailViewModelTest`, `EditorViewModelTest` | Lógica de cada pantalla: login, inicio, cola, historial, ajustes, detalle y el formulario completo |
+
+Se mide la **lógica** (reglas, datos, sincronización y ViewModels). Las funciones `@Composable`, el tema, la navegación y el código generado (R, BuildConfig, DAOs de Room) quedan fuera de la medición (`app/build.gradle.kts › kover`). Dos pruebas de la cámara usan `FileProvider`, que solo acepta rutas tipo Unix: en Windows aparecen como *omitidas* y se ejecutan en Linux/macOS.
+
+## 7. Limitaciones conocidas del MVP
 
 - El catálogo de tipos/procesos es de demostración hasta que VITAIROS entregue el oficial (`data/model/Catalog.kt`).
 - El Supervisor ve los reportes del mismo dispositivo (no hay backend compartido).
