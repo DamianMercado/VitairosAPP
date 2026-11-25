@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Solo para saber si hay conexión real antes del envío simulado -->
+    <!-- Red: detección de conectividad y (a futuro) API REST real -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- La cámara se usa mediante la app de cámara del sistema: no se declara el permiso CAMERA. -->
+    <!-- La cámara se usa mediante la app de cámara del sistema (ACTION_IMAGE_CAPTURE),
+         por eso NO se declara el permiso CAMERA. -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <queries>
@@ -38,6 +40,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Expone únicamente la carpeta temporal de la cámara (cache privada) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
